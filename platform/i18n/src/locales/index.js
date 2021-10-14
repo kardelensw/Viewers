@@ -5,6 +5,7 @@ import fr from './fr/';
 import ja_JP from './ja-JP/';
 import nl from './nl/';
 import pt_BR from './pt-BR/';
+import tr_TR from './tr-TR/';
 import vi from './vi/';
 import zh from './zh/';
 import test_lng from './test-LNG/';
@@ -17,6 +18,7 @@ export default {
   ...ja_JP,
   ...nl,
   ...pt_BR,
+  ...tr_TR,
   ...vi,
   ...zh,
   ...test_lng

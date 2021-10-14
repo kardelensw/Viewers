@@ -49,12 +49,12 @@ const languagesMap = {
   te: 'Telugu',
   th: 'Thai',
   tr: 'Turkish',
+  'tr-TR' : 'Turkish (Turkey)',
   uk: 'Ukrainian',
   vi: 'Vietnamese',
   zh: 'Chinese',
   'zh-CN': 'Chinese (China)',
-  'zh-TW': 'Chinese (Taiwan)',
-  'test-LNG': 'Test Language',
+  'zh-TW': 'Chinese (Taiwan)'
 };
 
 const getLanguageLabel = (language) => {
