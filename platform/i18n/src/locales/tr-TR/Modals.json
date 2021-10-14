@@ -1,0 +1,13 @@
+{
+  "Download High Quality Image": "Yüksek Kaliteli Görüntüyü İndirin",
+  "Cancel": "Vazgeç",
+  "Download": "İndir",
+  "File Name": "Dosya Adı",
+  "Active viewport has no displayed image": "Aktif görünüm alanında görüntülenen görüntü yok",
+  "Image preview": "Görüntü Önizle",
+  "Show Annotations": "Ek Açıklamaları Göster",
+  "File Type": "Dosya Tipi",
+  "Image height (px)": "Görüntü yüksekliği (px)",
+  "Image width (px)": "Görüntü genişliği (px)",
+  "Please specify the dimensions, filename, and desired type for the output image.": "Lütfen çıktı görüntüsü için boyutları, dosya adını ve istediğiniz türü belirtin."
+}

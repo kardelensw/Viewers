@@ -5,5 +5,10 @@
   "ResetDefaultMessage": "Tercihler başarıyla varsayılana sıfırlandı. <br /> Bu eylemi gerçekleştirmek için <strong>Kaydetmelisiniz</strong>.",
   "Save": "$t(Buttons:Save)",
   "SaveMessage": "Tercihler kaydedildi",
-  "User Preferences": "Kullanıcı tercihleri"
+  "User Preferences": "Kullanıcı tercihleri",
+  "Function": "Fonksiyon",
+  "Shortcut": "Kısayol",
+  "Language": "Dil",
+  "Hotkeys": "Kısayollar",
+  "General": "Genel"
 }
