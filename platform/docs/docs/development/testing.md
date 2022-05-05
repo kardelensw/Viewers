@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 sidebar_label: Testing
 ---
 
@@ -24,26 +24,22 @@ Running unit test will generate a report at the end showing the successful and
 unsuccessful tests with detailed explanations.
 
 ## End-to-end test
-
 For running the OHIF e2e test you need to run the following steps:
 
-- Create a mini-pacs for OHIF to access the images for testing. We download and
-  run our lightweight implementation which provides a collection of DICOM
-  studies ([source code][mini-pacs]).
+- Open a new terminal, and from the root of the OHIF mono repo, run the following command:
 
   ```bash
-  docker run -p 5985:5985 -p 5984:5984 -e USE_POUCHDB=true -e DB_SERVER=http://0.0.0.0 ohif/viewer-testdata:0.1-test
+  yarn test:data
   ```
 
-  Successful execution should be
+  This will download the required data to run the e2e tests (it might take a while).
+  The `test:data` only needs to be run once and checks the data out. Read more about
+  test data [below](#test-data).
 
-  ![](../assets/img/docker-pacs.png)
-
-- Open a new terminal, navigate to the OHIF project, and run OHIF with the
-  dicom-server config
+- Run the viewer with e2e config
 
   ```bash
-  APP_CONFIG=config/dicomweb-server.js yarn start
+  APP_CONFIG=config/e2e.js yarn start
   ```
 
   You should be able to see test studies in the study list
@@ -53,7 +49,7 @@ For running the OHIF e2e test you need to run the following steps:
 - Open a new terminal inside the OHIF project, and run the e2e cypress test
 
   ```bash
-  yarn run test:e2e
+  yarn test:e2e
   ```
 
   You should be able to see the cypress window open
@@ -62,10 +58,31 @@ For running the OHIF e2e test you need to run the following steps:
 
   Run the tests by clicking on the `Run #number integration tests` .
 
-  A new window will open and you will see e2e tests being executed one after
+  A new window will open, and you will see e2e tests being executed one after
   each other.
 
   ![e2e-cypress-final](../assets/img/e2e-cypress-final.png)
+
+  ## Test Data
+  The testing data is stored in two OHIF repositories.  The first contains the
+  binary DICOM data, at [viewer-testdata](https://github.com/OHIF/viewer-testdata.git)
+  while the second module contains data in the DICOMweb format, installed as a submodule
+  into OHIF in the `testdata` directory.  This is retrieved via the command
+  ```bash
+  yarn test:data
+  ```
+  or the equivalent command `git submodule update --init`
+  When adding new data, run:
+  ```
+  npm install -g dicomp10-to-dicomweb
+  mkdicomweb -d dicomweb dcm
+  ```
+  to update the local dicomweb submodule in viewer-testdata.  Then, commit
+  that data and update the submodules used in OHIF and in the viewer-testdata
+  parent modules.
+
+  All data MUST be fully anonymized and allowed to be used for open access.
+  Any attributions should be included in the DCM directory.
 
 ## Testing Philosophy
 
@@ -109,7 +126,7 @@ choice for asserting an element's border color.
 
 Modern tooling gives us this "for free". It can catch invalid regular
 expressions, unused variables, and guarantee we're calling methods/functions
-with the expected paramater types.
+with the expected parameter types.
 
 Example Tooling:
 
@@ -149,7 +166,6 @@ We write integration tests to gain confidence that several units work together.
 Generally, we want to mock as little as possible for these tests. In practice,
 this means only mocking network requests.
 
-
 ### End-to-End Tests
 
 These are the most expensive tests to write and maintain. Largely because, when
@@ -176,8 +192,6 @@ feature `X` or scenario `Y`? Open an issue and let's discuss.
   - Be sure to check out `Getting Started` and `Core Concepts`
 - [Best Practices](https://docs.cypress.io/guides/references/best-practices.html)
 - [Example Recipes](https://docs.cypress.io/examples/examples/recipes.html)
-
-
 
 <!--
   Links

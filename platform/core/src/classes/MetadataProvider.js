@@ -1,9 +1,8 @@
 import queryString from 'query-string';
 import dicomParser from 'dicom-parser';
 import getPixelSpacingInformation from '../utils/metadataProvider/getPixelSpacingInformation';
-import fetchPaletteColorLookupTableData from '../utils/metadataProvider/fetchPaletteColorLookupTableData';
-import fetchOverlayData from '../utils/metadataProvider/fetchOverlayData';
 import DicomMetadataStore from '../services/DicomMetadataStore';
+import fetchPaletteColorLookupTableData from '../utils/metadataProvider/fetchPaletteColorLookupTableData';
 
 class MetadataProvider {
   constructor() {
@@ -22,46 +21,6 @@ class MetadataProvider {
     });
   }
 
-  /*async addInstance(dicomJSONDatasetOrP10ArrayBuffer, options = {}) {
-    let dicomJSONDataset;
-
-    // If Arraybuffer, parse to DICOMJSON before naturalizing.
-    if (dicomJSONDatasetOrP10ArrayBuffer instanceof ArrayBuffer) {
-      const dicomData = DicomMessage.readFile(dicomJSONDatasetOrP10ArrayBuffer);
-
-      dicomJSONDataset = dicomData.dict;
-    } else {
-      dicomJSONDataset = dicomJSONDatasetOrP10ArrayBuffer;
-    }
-
-    // Check if dataset is already naturalized.
-
-    let naturalizedDataset;
-
-    if (dicomJSONDataset['SeriesInstanceUID'] === undefined) {
-      naturalizedDataset = dcmjs.data.DicomMetaDictionary.naturalizeDataset(
-        dicomJSONDataset
-      );
-    } else {
-      naturalizedDataset = dicomJSONDataset;
-    }
-
-    const {
-      StudyInstanceUID,
-      SeriesInstanceUID,
-      SOPInstanceUID,
-    } = naturalizedDataset;
-
-    const study = this._getAndCacheStudy(StudyInstanceUID);
-    const series = this._getAndCacheSeriesFromStudy(study, SeriesInstanceUID);
-    const instance = this._getAndCacheInstanceFromStudy(series, SOPInstanceUID);
-
-    Object.assign(instance, naturalizedDataset);
-
-    await this._checkBulkDataAndInlineBinaries(instance, options.server);
-
-    return instance;
-  }*/
 
   addImageIdToUIDs(imageId, uids) {
     // This method is a fallback for when you don't have WADO-URI or WADO-RS.
@@ -70,48 +29,6 @@ class MetadataProvider {
 
     this.imageIdToUIDs.set(imageId, uids);
   }
-
-  // _getAndCacheStudy(StudyInstanceUID) {
-  //   const studies = this.studies;
-
-  //   let study = studies.get(StudyInstanceUID);
-
-  //   if (!study) {
-  //     study = { series: new Map() };
-  //     studies.set(StudyInstanceUID, study);
-  //   }
-
-  //   return study;
-  // }
-  // _getAndCacheSeriesFromStudy(study, SeriesInstanceUID) {
-  //   let series = study.series.get(SeriesInstanceUID);
-
-  //   if (!series) {
-  //     series = { instances: new Map() };
-  //     study.series.set(SeriesInstanceUID, series);
-  //   }
-
-  //   return series;
-  // }
-
-  // _getAndCacheInstanceFromStudy(series, SOPInstanceUID) {
-  //   let instance = series.instances.get(SOPInstanceUID);
-
-  //   if (!instance) {
-  //     instance = {};
-  //     series.instances.set(SOPInstanceUID, instance);
-  //   }
-
-  //   return instance;
-  // }
-
-  // async _checkBulkDataAndInlineBinaries(instance, server) {
-  //   await fetchOverlayData(instance, server);
-
-  //   if (instance.PhotometricInterpretation === 'PALETTE COLOR') {
-  //     await fetchPaletteColorLookupTableData(instance, server);
-  //   }
-  // }
 
   _getInstance(imageId) {
     const uids = this._getUIDsFromImageID(imageId);
@@ -244,9 +161,7 @@ class MetadataProvider {
       case WADO_IMAGE_LOADER_TAGS.IMAGE_PIXEL_MODULE:
         metadata = {
           samplesPerPixel: validNumber(instance.SamplesPerPixel),
-          photometricInterpretation: validNumber(
-            instance.PhotometricInterpretation
-          ),
+          photometricInterpretation: instance.PhotometricInterpretation,
           rows: validNumber(instance.Rows),
           columns: validNumber(instance.Columns),
           bitsAllocated: validNumber(instance.BitsAllocated),
@@ -266,14 +181,14 @@ class MetadataProvider {
           bluePaletteColorLookupTableDescriptor: validNumber(
             instance.BluePaletteColorLookupTableDescriptor
           ),
-          redPaletteColorLookupTableData: validNumber(
-            instance.RedPaletteColorLookupTableData
+          redPaletteColorLookupTableData: fetchPaletteColorLookupTableData(
+            instance, "RedPaletteColorLookupTableData", "RedPaletteColorLookupTableDescriptor"
           ),
-          greenPaletteColorLookupTableData: validNumber(
-            instance.GreenPaletteColorLookupTableData
+          greenPaletteColorLookupTableData: fetchPaletteColorLookupTableData(
+            instance, "GreenPaletteColorLookupTableData", "GreenPaletteColorLookupTableDescriptor"
           ),
-          bluePaletteColorLookupTableData: validNumber(
-            instance.BluePaletteColorLookupTableData
+          bluePaletteColorLookupTableData: fetchPaletteColorLookupTableData(
+            instance, "BluePaletteColorLookupTableData", "BluePaletteColorLookupTableDescriptor"
           ),
         };
 
@@ -508,4 +423,3 @@ const WADO_IMAGE_LOADER_TAGS = {
 };
 
 const INSTANCE = 'instance';
-const DICOMWEB = 'dicomweb';

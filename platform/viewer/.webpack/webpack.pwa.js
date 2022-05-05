@@ -10,6 +10,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 // ~~ Directories
 const SRC_DIR = path.join(__dirname, '../src');
 const DIST_DIR = path.join(__dirname, '../dist');
@@ -22,6 +23,22 @@ const PROXY_TARGET = process.env.PROXY_TARGET;
 const PROXY_DOMAIN = process.env.PROXY_DOMAIN;
 const ENTRY_TARGET = process.env.ENTRY_TARGET || `${SRC_DIR}/index.js`;
 const Dotenv = require('dotenv-webpack');
+const writePluginImportFile = require('./writePluginImportsFile.js');
+
+writePluginImportFile(SRC_DIR);
+
+const setHeaders = (res, path) => {
+  if (path.indexOf('.gz') !== -1) {
+    res.setHeader('Content-Encoding', 'gzip')
+  } else if (path.indexOf('.br') !== -1) {
+    res.setHeader('Content-Encoding', 'br')
+  }
+  if (path.indexOf('.pdf') !== -1) {
+    res.setHeader('Content-Type', 'application/pdf');
+  } else {
+    res.setHeader('Content-Type', 'application/json')
+  }
+}
 
 module.exports = (env, argv) => {
   const baseConfig = webpackBase(env, argv, { SRC_DIR, DIST_DIR });
@@ -36,7 +53,7 @@ module.exports = (env, argv) => {
       path: DIST_DIR,
       filename: isProdBuild ? '[name].bundle.[chunkhash].js' : '[name].js',
       publicPath: PUBLIC_URL, // Used by HtmlWebPackPlugin for asset prefix
-      devtoolModuleFilenameTemplate: function(info) {
+      devtoolModuleFilenameTemplate: function (info) {
         if (isProdBuild) {
           return `webpack:///${info.resourcePath}`;
         } else {
@@ -99,6 +116,15 @@ module.exports = (env, argv) => {
         // Increase the limit to 4mb:
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       }),
+      new CopyPlugin({
+        patterns: [
+          {
+            from:
+              '../../../node_modules/cornerstone-wado-image-loader/dist/dynamic-import',
+            to: DIST_DIR,
+          },
+        ],
+      }),
     ],
     // https://webpack.js.org/configuration/dev-server/
     devServer: {
@@ -110,8 +136,32 @@ module.exports = (env, argv) => {
       hot: true,
       open: true,
       port: 3000,
-      host: '0.0.0.0',
-      public: 'http://localhost:' + 3000,
+      client: {
+        overlay: { errors: true, warnings: false },
+      },
+      'static': [
+        {
+          directory: path.join(require('os').homedir(), 'dicomweb'),
+          staticOptions: {
+            extensions: ['gz', 'br'],
+            index: "index.json.gz",
+            redirect: true,
+            setHeaders,
+          },
+          publicPath: '/dicomweb',
+        },
+        {
+          directory: '../../testdata',
+          staticOptions: {
+            extensions: ['gz', 'br'],
+            index: "index.json.gz",
+            redirect: true,
+            setHeaders,
+          },
+          publicPath: '/viewer-testdata',
+        },
+      ],
+      //public: 'http://localhost:' + 3000,
       //writeToDisk: true,
       historyApiFallback: {
         disableDotRule: true,
@@ -124,7 +174,7 @@ module.exports = (env, argv) => {
   });
 
   if (hasProxy) {
-    mergedConfig.devServer.proxy = {};
+    mergedConfig.devServer.proxy = mergedConfig.devServer.proxy || {};
     mergedConfig.devServer.proxy[PROXY_TARGET] = PROXY_DOMAIN;
   }
 

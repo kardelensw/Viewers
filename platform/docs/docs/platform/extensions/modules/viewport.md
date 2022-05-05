@@ -44,7 +44,7 @@ const getViewportModule = () => {
 ## Example Viewport Component
 
 A simplified version of the tracked CornerstoneViewport is shown below, which
-creates a cornerstone viewport and and action bar on top of it.
+creates a cornerstone viewport and action bar on top of it.
 
 ```jsx
 function TrackedCornerstoneViewport({
@@ -58,7 +58,7 @@ function TrackedCornerstoneViewport({
 }) {
   const renderViewport = () => {
     const { component: Component } = extensionManager.getModuleEntry(
-      'org.ohif.cornerstone.viewportModule.cornerstone'
+      '@ohif/extension-cornerstone.viewportModule.cornerstone'
     );
     return (
       <Component

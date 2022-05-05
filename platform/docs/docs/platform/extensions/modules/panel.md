@@ -20,7 +20,7 @@ that can be displayed in the consuming application's "Panel" Component.
 
 The `menuOptions`'s `target` key, points to a registered `components`'s `id`. A
 `defaultContext` is applied to all `menuOption`s; however, each `menuOption` can
-optionally provide it's own `context` value.
+optionally provide its own `context` value.
 
 The `getPanelModule` receives an object containing the `ExtensionManager`'s
 associated `ServicesManager` and `CommandsManager`.
@@ -67,9 +67,20 @@ using the mode configuration. As seen below, the `leftPanels` and `rightPanels`
 accept an `Array` of the `IDs`.
 
 ```js
-export default function mode({ modeConfiguration }) {
+
+const extensionDependencies = {
+  '@ohif/extension-default': '^3.0.0',
+  '@ohif/extension-cornerstone': '^3.0.0',
+  '@ohif/extension-measurement-tracking': '^3.0.0',
+  '@ohif/extension-dicom-sr': '^3.0.0',
+};
+
+const id = 'viewer'
+const version = '3.0.0
+
+function modeFactory({ modeConfiguration }) {
   return {
-    id: 'viewer',
+    id,
     routes: [
       {
         path: 'longitudinal',
@@ -78,10 +89,10 @@ export default function mode({ modeConfiguration }) {
             id,
             props: {
               leftPanels: [
-                'org.ohif.measurement-tracking.panelModule.seriesList',
+                '@ohif/extension-measurement-tracking.panelModule.seriesList',
               ],
               rightPanels: [
-                'org.ohif.measurement-tracking.panelModule.trackedMeasurements',
+                '@ohif/extension-measurement-tracking.panelModule.trackedMeasurements',
               ],
               viewports,
             },
@@ -89,12 +100,16 @@ export default function mode({ modeConfiguration }) {
         },
       },
     ],
-    extensions: [
-      'org.ohif.default',
-      'org.ohif.cornerstone',
-      'org.ohif.measurement-tracking',
-      'org.ohif.dicom-sr',
-    ],
+    extensions: extensionDependencies
   };
 }
+
+const mode = {
+  id,
+  modeFactory,
+  extensionDependencies,
+};
+
+export default mode;
+
 ```

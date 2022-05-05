@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation } from 'react-router';
+
 import PropTypes from 'prop-types';
 // TODO: DicomMetadataStore should be injected?
 import { DicomMetadataStore } from '@ohif/core';
@@ -49,7 +50,7 @@ async function defaultRouteInit({
   unsubscriptions.push(seriesAddedUnsubscribe);
 
   studyInstanceUIDs.forEach(StudyInstanceUID => {
-    dataSource.retrieveSeriesMetadata({ StudyInstanceUID });
+    dataSource.retrieve.series.metadata({ StudyInstanceUID });
   });
 
   return unsubscriptions;
@@ -82,7 +83,6 @@ export default function ModeRoute({
   const {
     DisplaySetService,
     HangingProtocolService,
-    UserAuthenticationService,
   } = servicesManager.services;
 
   const { extensions, sopClassHandlers, hotkeys, hangingProtocols } = mode;
@@ -100,16 +100,11 @@ export default function ModeRoute({
   // Only handling one route per mode for now
   const route = mode.routes[0];
 
-  const layoutTemplateRouteData = route.layoutTemplate({ location });
-  const layoutTemplateModuleEntry = extensionManager.getModuleEntry(
-    layoutTemplateRouteData.id
-  );
-  const LayoutComponent = layoutTemplateModuleEntry.component;
-
   // For each extension, look up their context modules
   // TODO: move to extension manager.
   let contextModules = [];
-  extensions.forEach(extensionId => {
+
+  Object.keys(extensions).forEach(extensionId => {
     const allRegisteredModuleIds = Object.keys(extensionManager.modulesMap);
     const moduleIds = allRegisteredModuleIds.filter(id =>
       id.includes(`${extensionId}.contextModule.`)
@@ -215,8 +210,10 @@ export default function ModeRoute({
 
     // Adding hanging protocols of extensions after onModeEnter since
     // it will reset the protocols
-    hangingProtocols.forEach(extentionProtocols => {
-      const hangingProtocolModule = extensionManager.getModuleEntry(extentionProtocols);
+    hangingProtocols.forEach(extensionProtocols => {
+      const hangingProtocolModule = extensionManager.getModuleEntry(
+        extensionProtocols
+      );
       if (hangingProtocolModule?.protocols) {
         HangingProtocolService.addProtocols(hangingProtocolModule.protocols);
       }
@@ -280,7 +277,7 @@ export default function ModeRoute({
     <ImageViewerProvider
       // initialState={{ StudyInstanceUIDs: StudyInstanceUIDs }}
       StudyInstanceUIDs={studyInstanceUIDs}
-    // reducer={reducer}
+      // reducer={reducer}
     >
       <CombinedContextProvider>
         <DragAndDropProvider>

@@ -3,7 +3,7 @@ import OHIF from '@ohif/core';
 
 import getImageId from '../DicomWebDataSource/utils/getImageId';
 
-const metadataProvider = OHIF.classes.metadataProvider;
+const metadataProvider = OHIF.classes.MetadataProvider;
 
 const mappings = {
   studyInstanceUid: 'StudyInstanceUID',
@@ -93,7 +93,7 @@ function createDicomJSONApi(dicomJsonConfig) {
     },
     query: {
       studies: {
-        mapParams: () => { },
+        mapParams: () => {},
         search: async param => {
           const [key, value] = Object.entries(param)[0];
           const mappedParam = mappings[key];
@@ -134,8 +134,68 @@ function createDicomJSONApi(dicomJsonConfig) {
     },
     retrieve: {
       series: {
-        metaData: () => {
-          console.debug(' DICOMJson retrieve series metadata');
+        metadata: ({
+          StudyInstanceUID,
+          madeInClient = false,
+          customSort,
+        } = {}) => {
+          if (!StudyInstanceUID) {
+            throw new Error(
+              'Unable to query for SeriesMetadata without StudyInstanceUID'
+            );
+          }
+
+          const study = findStudies('StudyInstanceUID', StudyInstanceUID)[0];
+          let series;
+
+          if (customSort) {
+            series = customSort(study.series);
+          } else {
+            series = study.series;
+          }
+
+          const seriesSummaryMetadata = series.map(series => {
+            const seriesSummary = {
+              StudyInstanceUID: study.StudyInstanceUID,
+              ...series,
+            };
+            delete seriesSummary.instances;
+            return seriesSummary;
+          });
+
+          // Async load series, store as retrieved
+          function storeInstances(naturalizedInstances) {
+            DicomMetadataStore.addInstances(naturalizedInstances, madeInClient);
+          }
+
+          DicomMetadataStore.addSeriesMetadata(
+            seriesSummaryMetadata,
+            madeInClient
+          );
+
+          function setSuccessFlag() {
+            const study = DicomMetadataStore.getStudy(
+              StudyInstanceUID,
+              madeInClient
+            );
+            study.isLoaded = true;
+          }
+
+          const numberOfSeries = series.length;
+          series.forEach((series, index) => {
+            const instances = series.instances.map(instance => {
+              const obj = {
+                ...instance.metadata,
+                url: instance.url,
+                imageId: instance.url,
+                ...series,
+              };
+              delete obj.instances;
+              return obj;
+            });
+            storeInstances(instances);
+            if (index === numberOfSeries - 1) setSuccessFlag();
+          });
         },
       },
     },
@@ -143,66 +203,6 @@ function createDicomJSONApi(dicomJsonConfig) {
       dicom: () => {
         console.debug(' DICOMJson store dicom');
       },
-    },
-    retrieveSeriesMetadata: ({
-      StudyInstanceUID,
-      madeInClient = false,
-      customSort,
-    } = {}) => {
-      if (!StudyInstanceUID) {
-        throw new Error(
-          'Unable to query for SeriesMetadata without StudyInstanceUID'
-        );
-      }
-
-      const study = findStudies('StudyInstanceUID', StudyInstanceUID)[0];
-      let series;
-
-      if (customSort) {
-        series = customSort(study.series);
-      } else {
-        series = study.series;
-      }
-
-      const seriesSummaryMetadata = series.map(series => {
-        const seriesSummary = {
-          StudyInstanceUID: study.StudyInstanceUID,
-          ...series,
-        };
-        delete seriesSummary.instances;
-        return seriesSummary;
-      });
-
-      // Async load series, store as retrieved
-      function storeInstances(naturalizedInstances) {
-        DicomMetadataStore.addInstances(naturalizedInstances, madeInClient);
-      }
-
-      DicomMetadataStore.addSeriesMetadata(seriesSummaryMetadata, madeInClient);
-
-      function setSuccessFlag() {
-        const study = DicomMetadataStore.getStudy(
-          StudyInstanceUID,
-          madeInClient
-        );
-        study.isLoaded = true;
-      }
-
-      const numberOfSeries = series.length;
-      series.forEach((series, index) => {
-        const instances = series.instances.map(instance => {
-          const obj = {
-            ...instance.metadata,
-            url: instance.url,
-            imageId: instance.url,
-            ...series,
-          };
-          delete obj.instances;
-          return obj;
-        });
-        storeInstances(instances);
-        if (index === numberOfSeries - 1) setSuccessFlag();
-      });
     },
     getImageIdsForDisplaySet(displaySet) {
       const images = displaySet.images;

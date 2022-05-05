@@ -6,11 +6,10 @@ sidebar_label: Toolbar
 # Module: Toolbar
 
 An extension can register a Toolbar Module by defining a `getToolbarModule`
-method. `OHIF-v3`'s `default` extension (`"ohif.org.default"`) provides 5 main
+method. `OHIF-v3`'s `default` extension (`"@ohif/extension-default"`) provides 5 main
 toolbar button types:
 
 ![toolbarModule](../../../assets/img/toolbar-module.png)
-
 
 ## Example Toolbar Module
 
@@ -57,7 +56,7 @@ a mode can add buttons to the toolbar by calling
 `toolDefinitions` which we will learn next.
 
 ```js
-export default function mode({ modeConfiguration }) {
+function modeFactory({ modeConfiguration }) {
   return {
     id: 'viewer',
     displayName: 'Basic Viewer',
@@ -77,12 +76,6 @@ export default function mode({ modeConfiguration }) {
           };
         },
       },
-    ],
-    extensions: [
-      'org.ohif.default',
-      'org.ohif.cornerstone',
-      'org.ohif.measurement-tracking',
-      'org.ohif.dicom-sr',
     ],
   };
 }
@@ -222,7 +215,7 @@ extension. To use it, you can just add the following definition to the list of
 ## Custom Button
 
 You can also create your own extension, and add your new custom tool appearance
-(e.g., split horizantlly instead of vertically for split tool). Simply add
+(e.g., split horizontally instead of vertically for split tool). Simply add
 `getToolbarModule` to your extension, and pass your tool react component to its
 `defaultComponent` property in the returned object. You can use `@ohif/ui`
 components such as `IconButton, Icon, Tooltip, ToolbarButton` to build your own

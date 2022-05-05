@@ -10,6 +10,20 @@ makes it easier for our community members to keep their "secret sauce" private,
 and incentives contributions back to the platform. The `@ohif/viewer` project of
 the platform is the lynchpin that combines everything to create our application.
 
+There are two configuration mechanisms, one for run-time configuration, allowing
+for changes to be decided based on including different configuration files as
+specified by the 'theme' URL parameters.  This mechanism is intended for
+modifications of data exposed as configurable items by the existing code.  See
+sections below on configuring this type of value.
+
+The other mechanism is the code-configuration mechanism that specifies load
+time configuration.  This is intended to load things that require code level
+changes to OHIF such as adding a new viewer configuration.  This is also used
+for base definitions that are shared site-wide such as the data sources.  This
+was the original configuration mechanism provided, and some of the configurations
+specified there are better suited to the run time loading, but are currently
+left alone as there hasn't been time to move them.
+
 We maintain a number of common viewer application configurations at
 [`<root>/platform/viewer/public/configs`][config-dir].
 
@@ -39,7 +53,7 @@ window.config = {
   dataSources: [
     {
       friendlyName: 'dcmjs DICOMWeb Server',
-      namespace: 'org.ohif.default.dataSourcesModule.dicomweb',
+      namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
       sourceName: 'dicomweb',
       configuration: {
         name: 'DCM4CHEE',
@@ -58,6 +72,7 @@ window.config = {
   ],
 };
 ```
+
 
 <!--
   LINKS

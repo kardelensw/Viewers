@@ -15,7 +15,7 @@ we make to the OHIF Viewer, then follow these steps:
 - [Fork][fork-a-repo] the [OHIF/Viewers][ohif-viewers-repo] repository
 - [Create a local clone][clone-a-repo] of your fork
   - `git clone https://github.com/YOUR-USERNAME/Viewers`
-- Add OHIF/Viewers as a [remote repository][add-remote-repo] labled `upstream`
+- Add OHIF/Viewers as a [remote repository][add-remote-repo] labeled `upstream`
   - Navigate to the cloned project's directory
   - `git remote add upstream https://github.com/OHIF/Viewers.git`
 
@@ -53,7 +53,7 @@ following commands:
 
 ```bash
 # Switch to the v3 branch
-git switch feat/v2-main
+git switch v3-stable
 
 # Restore dependencies
 yarn install
